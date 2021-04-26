@@ -131,8 +131,21 @@ public class DynAttrPropertyConditionGenerator extends PropertyConditionGenerato
                 .map(AttributeDefinition::getId)
                 .orElse("");
         String operation = PropertyConditionUtils.getJpqlOperation(condition);
-        if (!PropertyConditionUtils.isUnaryOperation(condition)) {
+        if (!PropertyConditionUtils.isUnaryOperation(condition)
+                && !PropertyConditionUtils.isInIntervalOperation(condition)) {
             operation = operation + " :" + parameterName;
+        }
+
+        if (PropertyConditionUtils.isInIntervalOperation(condition)) {
+            StringBuilder formattedOperation = new StringBuilder(operation);
+            formattedOperation.replace(
+                    formattedOperation.indexOf("{"),
+                    formattedOperation.indexOf(","),
+                    cavAlias + "." + valueFieldName);
+
+            return "(exists (select " + cavAlias + " from dynat_CategoryAttributeValue " + cavAlias +
+                    " where " + cavAlias + ".entity." + cavEntityId + "=" + entityAlias + entityPropertyPath + ".id and "
+                    + formattedOperation + " and " + cavAlias + ".categoryAttribute.id='" + attributeId + "'))";
         }
 
         return "(exists (select " + cavAlias + " from dynat_CategoryAttributeValue " + cavAlias +
