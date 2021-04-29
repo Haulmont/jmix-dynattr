@@ -136,22 +136,17 @@ public class DynAttrPropertyConditionGenerator extends PropertyConditionGenerato
             operation = operation + " :" + parameterName;
         }
 
-        if (PropertyConditionUtils.isInIntervalOperation(condition)) {
-            StringBuilder formattedOperation = new StringBuilder(operation);
-            formattedOperation.replace(
-                    formattedOperation.indexOf("{"),
-                    formattedOperation.indexOf(","),
-                    cavAlias + "." + valueFieldName);
+        String formattedOperation = cavAlias + "." + valueFieldName + " " + operation;
 
-            return "(exists (select " + cavAlias + " from dynat_CategoryAttributeValue " + cavAlias +
-                    " where " + cavAlias + ".entity." + cavEntityId + "=" + entityAlias + entityPropertyPath + ".id and "
-                    + formattedOperation + " and " + cavAlias + ".categoryAttribute.id='" + attributeId + "'))";
+        if (PropertyConditionUtils.isInIntervalOperation(condition)) {
+            formattedOperation = new StringBuilder(operation)
+                    .replace(operation.indexOf("{"), operation.indexOf(","), cavAlias + "." + valueFieldName)
+                    .toString();
         }
 
         return "(exists (select " + cavAlias + " from dynat_CategoryAttributeValue " + cavAlias +
                 " where " + cavAlias + ".entity." + cavEntityId + "=" + entityAlias + entityPropertyPath + ".id and "
-                + cavAlias + "." + valueFieldName + " " + operation + " and " + cavAlias +
-                ".categoryAttribute.id='" + attributeId + "'))";
+                + formattedOperation + " and " + cavAlias + ".categoryAttribute.id='" + attributeId + "'))";
     }
 
     protected String getValueFieldName(MetaProperty metaProperty) {
